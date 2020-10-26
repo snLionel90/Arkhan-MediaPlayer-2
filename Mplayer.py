@@ -5,12 +5,12 @@ from tkinter import filedialog
 from tkinter import PhotoImage
 from pygame import mixer
 
-
 # ----------------------------- Main -------------------------------------------
 window = tk.Tk()
 window.geometry('630x430')
 window.wm_title('Arkhann Mplayer')
 window.iconbitmap('./images/mplay.ico')
+window.configure(background = "white")
 #imagenes
 img = PhotoImage(file='images/music.gif')
 next_ = PhotoImage(file = 'images/next.gif')
@@ -27,8 +27,8 @@ class MPlayer(tk.Frame):
 		self.pack()
 		mixer.init()
 
-		if os.path.exists('canciones.mkm'):
-			with open('canciones.mkm', 'rb') as fb:
+		if os.path.exists('canciones.m3u'):
+			with open('canciones.m3u', 'rb') as fb:
 				self.lista_repro = pickle.load(fb)
 		else:
 			self.lista_repro=[]
@@ -44,7 +44,7 @@ class MPlayer(tk.Frame):
 		self.panel_lista()
 
 	def frames(self):
-		self.pista = tk.Label(self, text='Nombre de Pista',font = ("comic sans",16), bg="grey", fg ="white", bd=5)
+		self.pista = tk.Label(self, text=' ',font = ("comic sans",16), bg="grey", fg ="grey70", bd=5)
 		self.pista.config(width =410, height=300)
 		self.pista.grid(row=0, column=0,padx=10)
 
@@ -52,7 +52,7 @@ class MPlayer(tk.Frame):
 		self.listaPista.config(width=190,height=400)
 		self.listaPista.grid(row=0, column=1, rowspan=3, pady=5)
 
-		self.controles = tk.Label(self,font=("comic sans",16),bg="white",fg="white",bd=2)
+		self.controles = tk.Label(self,font=("comic sans",16),bg="grey70",bd=2)
 		self.controles.config(width = 410, height = 80)
 		self.controles.grid(row=2, column=0,pady=5,padx=10)
 
@@ -61,11 +61,12 @@ class MPlayer(tk.Frame):
 		self.canvas.configure(width=400, height=240)
 		self.canvas.grid(row=0,column=0)
 
-		self.titulo = tk.Label(self.pista, font=("comic sans",15),bg="white",fg="dark blue")
+		self.titulo = tk.Label(self.pista, font=("comic sans",15),bg="grey70",fg="dark blue")
 		self.titulo['text'] = '©Sn.Lionel90'
 		self.titulo.config(width=30, height=1)
 		self.titulo.grid(row=1,column=0,padx=10)
 
+#COntrol deslizante para la cancion 
 	#def trackbar(self):
 
 	#panel de control
@@ -92,7 +93,7 @@ class MPlayer(tk.Frame):
 		self.stop_btn.grid(row=0,column=4)
 
 		self.volumen = tk.DoubleVar(self)
-		self.controlcillo = tk.Scale(self.controles, from_=20, to = 0, orient = tk.VERTICAL)
+		self.controlcillo = tk.Scale(self.controles, from_=0, to = 20, orient = tk.HORIZONTAL)
 		self.controlcillo['variable'] = self.volumen
 		self.controlcillo.set(8)
 		mixer.music.set_volume(0.8)
@@ -122,7 +123,7 @@ class MPlayer(tk.Frame):
 				if os.path.splitext(file)[1] == '.mp3':
 					path = (root_ + '/' + file).replace('\\','/')
 					self.milista2.append(path)
-		with open('canciones.mkm', 'wb') as fibi:
+		with open('canciones.m3u', 'wb') as fibi:
 			pickle.dump(self.milista2, fibi)
 		self.lista_repro = self.milista2
 		self.listaPista['text'] = f'Total pistas: -{str(len(self.lista_repro))}'
@@ -139,15 +140,15 @@ class MPlayer(tk.Frame):
 		mixer.music.set_volume(self.v / 10)
 
 	def detener(self,event=None):
-		if event is not None:
-			self.stop=True
-			mixer.music.stop()
+		mixer.music.stop()
+		print("Cancion detenida")
 
 	def play(self, event=None):
+		print ("Reproduciendo pista ")
 		if event is not None:
 			self.current = self.listilla.curselection()[0]
 			for i in range(len(self.lista_repro)):
-				self.listilla.itemconfigure(i, bg="navajo white")
+				self.listilla.itemconfigure(i, bg="white")
 		mixer.music.load(self.lista_repro[self.current])
 		self.titulo['anchor'] = 'w'
 		self.titulo['text'] = os.path.basename(self.lista_repro[self.current])
@@ -157,7 +158,7 @@ class MPlayer(tk.Frame):
 		self.played=True
 		self.listilla.activate(self.current)
 		self.listilla.itemconfigure(self.current, bg='sky blue')
-
+		
 		mixer.music.play()
 
 	def cancion_pausa(self):
@@ -165,6 +166,7 @@ class MPlayer(tk.Frame):
 			self.paused = True
 			mixer.music.pause()
 			self.pausa['image'] = pause
+			print ("Pista en Pausa ")
 		
 		else:
 			if self.played==False:
@@ -172,23 +174,26 @@ class MPlayer(tk.Frame):
 			self.paused=False
 			mixer.music.unpause()
 			self.pausa['image'] = play
+			print("Reanudando pista")
 
 	def cancion_ant(self):
+		print ("Reproduciendo pista Anterior ")
 		if self.current > 0:
 			self.current -= 1
 		else:
 			self.current = 0
 		self.listilla.itemconfigure(self.current + 1, bg='white')
 		self.play()
-
+		
 	def cancion_sig(self):
+		print("Leplodusiendo Pista Sijiente")
 		if self.current < len(self.lista_repro) - 1:
 			self.current += 1
 		else:
 			self.current = 0
 		self.listilla.itemconfigure(self.current - 1, bg='white')
 		self.play()
-
+		
 	def salir(self):
 		exit(0)
 
